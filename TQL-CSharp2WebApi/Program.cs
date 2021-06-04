@@ -4,7 +4,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace TQL_CSharp2WebApi {
+
     class Program {
+
+        public static int Id { get; set; }
 
         async Task Run() {
             var http = new HttpClient();
@@ -12,20 +15,25 @@ namespace TQL_CSharp2WebApi {
                 PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+            var url = "http://localhost:40046/api/employees";
 
-            var employee = new Employee() {
-                Id = 0, Login = "jdoe", Password = "password", Firstname = "Jane", Lastname = "Doe", IsManager = true
+            var newEmpl = new Employee() {
+                Id = 0, Firstname = "Noah", Lastname = "Phence", Login = "nphence", Password = "password", IsManager = true
             };
-            var json = JsonSerializer.Serialize<Employee>(employee, jsonSerializerOptions);
+            var json = JsonSerializer.Serialize<Employee>(newEmpl, jsonSerializerOptions);
             var httpContent2 = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            var httpMessageResponse2 = await http.PostAsync("http://localhost:40046/api/employees", httpContent2);
-            
+            var httpMessageResponse2 = await http.PostAsync(url, httpContent2);
 
-            var httpMessageResponse = await http.GetAsync("http://localhost:40046/api/employees");
+            var httpMessageResponse = await http.GetAsync(url);
             var httpContent = await httpMessageResponse.Content.ReadAsStringAsync();
-            var employees = JsonSerializer.Deserialize(httpContent, typeof(Employee[]), jsonSerializerOptions);
+            var employees = JsonSerializer.Deserialize<Employee[]>(httpContent, jsonSerializerOptions);
+
+            foreach(var e in employees) {
+                Console.WriteLine($"{e.Id} | {e.Lastname}");
+            }
         }
-        static async Task Main(string[] args) {
+
+        async static Task Main(string[] args) {
             var pgm = new Program();
             await pgm.Run();
         }
